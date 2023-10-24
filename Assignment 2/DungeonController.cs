@@ -1,9 +1,5 @@
 ﻿//using AStarNavigator;
 //using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
-//using MiNET.Blocks;
-//using MiNET.Plugins;
-//using MiNET.UI;
-//using MiNET.Utils.Vectors;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
@@ -176,7 +172,28 @@ namespace Assignment_2
 
         void AddCamera()
         {
-            Grid.AddCamera(new Cell(2,3), "S");
+            Cell CameraLocation = Cell.PromptForCoordinate("Enter the camera's location (X,Y):");
+            while (true)
+            {
+                Console.WriteLine("Enter the direction the camera is facing (n, s, e or w):");
+
+                string? CameraDirection = Console.ReadLine();
+
+
+                if (CameraDirection != null && (CameraDirection == "n" || CameraDirection == "e" || CameraDirection == "s" || CameraDirection == "w"))
+                {
+
+                    Grid.AddCamera(new Cell(CameraLocation.X,CameraLocation.Y), CameraDirection);
+                    return;
+
+                }
+                else
+                {
+                    Console.WriteLine("Invalid direction.");
+                }
+
+            }
+           
         }
 
 
