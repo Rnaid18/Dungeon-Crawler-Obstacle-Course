@@ -9,9 +9,9 @@ namespace Assignment_2
         private int RowNum;
         private int ColumnNum;
         private Dictionary<(int, int), Cell> Grid;
- 
 
-        public DungeonGrid (int Columnnum, int Rownum)
+
+        public DungeonGrid(int Columnnum, int Rownum)
         {
             this.RowNum = Rownum;
             this.ColumnNum = Columnnum;
@@ -40,11 +40,11 @@ namespace Assignment_2
                 if (HorizontalFence)
                 {
                     Grid[(FenceCoordStart.Y, i)] = new Fence(FenceCoordStart.Y, i);
-                } 
+                }
                 else // Vertical Fence 
                 {
                     Grid[(i, FenceCoordStart.X)] = new Fence(i, FenceCoordStart.X);
-                }   
+                }
             }
         }
 
@@ -73,40 +73,74 @@ namespace Assignment_2
         }
 
 
-        
+
 
         public void AddCamera(Cell CameraLocation, String Direction)
         {
-            for (int i = CameraLocation.X; i < 100; i++)
-            {
-                 for (int j = 0; j < (i + 1); j++)
-                {
-                    if (j == 0)
-                    {
-                        Grid[(CameraLocation.X + i, CameraLocation.Y)] = new Camera(CameraLocation.X + i, CameraLocation.Y);
-                     }
-                    else
-                    {
-                        Grid[(CameraLocation.X + i, CameraLocation.Y - j)] = new Camera(CameraLocation.X + i, CameraLocation.Y - j);
-                        Grid[(CameraLocation.X + i, CameraLocation.Y + j)] = new Camera(CameraLocation.X + i, CameraLocation.Y + j);
-                    }
+            Grid[(CameraLocation.Y, CameraLocation.X)] = new Camera(CameraLocation.Y, CameraLocation.X);   
 
+            double Range = 1000;
+            int Compass = GetCompass(Direction);
+
+            Cell TopLeftScan = new Cell(CameraLocation.X - (int)Math.Ceiling(Range), CameraLocation.Y - (int)Math.Ceiling(Range));
+            Cell BottomRightScan = new Cell(CameraLocation.X + (int)Math.Ceiling(Range), CameraLocation.Y + (int)Math.Ceiling(Range));
+
+            for (int i = TopLeftScan.Y; i <= BottomRightScan.Y; i++)
+            {
+                for (int j = TopLeftScan.X; j <= BottomRightScan.X; j++)
+                {
+                    if (IsInSector(CameraLocation, Range / 2, Compass, j, i))
+                    {
+                        Grid[(i, j)] = new Camera(i, j);
+                    }
                 }
+
             }
         }
 
 
+        private int GetCompass(String Direction)
+        {
+            switch (Direction)
+            {
+                case "n":
+                    return 270;
+                case "s":
+                    return 90;
+                case "w":
+                    return 180;
+                default: return 0;
+            }
+        }
 
+        private bool IsInSector(Cell CameraLocation, double radius, int sector, int x, int y) {
+            double Let = 180 / Math.PI * Math.Atan2(y - CameraLocation.Y, x - CameraLocation.X);
+            return degreesApart(sector, Let) <= 90 / 2;
 
+        }
 
+        private double degreesApart(double startDegree, double endDegree)
+        {
+            return Math.Min(degreesLeft(startDegree, endDegree), degreesRight(startDegree, endDegree));
+        }
 
+        private double degreesLeft(double startDegree, double endDegree)
+        {
+            return wrap(endDegree - startDegree, 360);
+        }
 
+        private double degreesRight(double startDegree, double endDegree)
+        {
+            return wrap(startDegree - endDegree, 360);
+        }
 
+        private double wrap(double value, double modulo)
+        {
+            return ((value % modulo) + modulo) % modulo;
+        }
+   
 
-
-
-
-
+ 
 
 
 
