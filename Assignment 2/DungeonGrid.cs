@@ -142,6 +142,70 @@ namespace Assignment_2
 
  
 
+        public string? AddSafePath (Cell AgentCurrentLocation, Cell AgentFinalDestination)
+        {
+            int maxX = Math.Max(AgentCurrentLocation.X, AgentFinalDestination.X);
+            int maxY = Math.Max(AgentCurrentLocation.Y, AgentFinalDestination.Y);
+            int gridSize = Math.Max(maxY, maxX);
+            int[,] pathGrid = new int[100, 100]; // Replace with your grid and obstacle information
+
+            foreach (var obstacle in Grid)
+            {
+                var key = obstacle.Key;
+                pathGrid[key.Item2, key.Item1] = 1;
+
+            }
+
+            return FindSafePath(pathGrid, AgentCurrentLocation.X, AgentCurrentLocation.Y, AgentFinalDestination.X, AgentFinalDestination.Y);
+
+         }
+
+        static string FindSafePath(int[,] grid, int x, int y, int endX, int endY)
+        {
+            if (x == endX && y == endY)
+                return "";
+
+            if (x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1) || grid[x, y] == 1)
+                return null; // Return null to indicate that this is not a valid path.
+
+            grid[x, y] = 1; // Mark the cell as visited
+
+            List<Tuple<int, int, string>> possibleMoves = new List<Tuple<int, int, string>>();
+
+            if (x < grid.GetLength(0) - 1 && grid[x + 1, y] != 1)
+                possibleMoves.Add(Tuple.Create(x + 1, y, "E"));
+            if (x > 0 && grid[x - 1, y] != 1) // Left
+                possibleMoves.Add(Tuple.Create(x - 1, y, "W"));
+            if (y < grid.GetLength(1) - 1 && grid[x, y + 1] != 1) 
+                possibleMoves.Add(Tuple.Create(x, y + 1, "S"));
+            if (y > 0 && grid[x, y - 1] != 1) // Up
+                possibleMoves.Add(Tuple.Create(x, y - 1, "N"));
+           
+
+            possibleMoves.Sort((a, b) => CalculateDistance(a.Item1, a.Item2, endX, endY) - CalculateDistance(b.Item1, b.Item2, endX, endY));
+
+            foreach (var move in possibleMoves)
+            {
+                int nextX = move.Item1;
+                int nextY = move.Item2;
+                string direction = move.Item3;
+
+                string path = FindSafePath(grid, nextX, nextY, endX, endY);
+                if (path != null)
+                    return direction + path;
+            }
+
+            grid[x, y] = 0; // Unmark the cell if the path is not successful
+
+            return null; // Return null to indicate that no valid path was found from this cell.
+        }
+
+
+        static int CalculateDistance(int x1, int y1, int x2, int y2)
+        {
+            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
+        }
+
 
 
 
@@ -172,7 +236,6 @@ namespace Assignment_2
                 safeDirections += "W";
             }
             return safeDirections;
-
         }
 
         public void DisplayGrid(Cell TopLeftCell, Cell BottomRightCell) 

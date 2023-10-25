@@ -61,7 +61,7 @@ namespace Assignment_2
                         DisplayObstacleMap();
                         break;
                     case "p":
-                        //execute option pmethod()
+                        FindSafePath();
                         break;
                     case "x":
                         ExitFlag = true;
@@ -197,10 +197,40 @@ namespace Assignment_2
         }
 
 
+        void FindSafePath () 
+        {
+            Cell AgentCurrentLocation = Cell.PromptForCoordinate("Enter your current location (X,Y):");
+            Cell MissionObjective = Cell.PromptForCoordinate("Enter the location of the mission objective (X,Y):");
+            while (true)
+            {
 
+                if (MissionObjective == AgentCurrentLocation)
+                {
+                    Console.WriteLine("Agent, you are already at the objective.");
+                    break;
+                }
+                else if (Grid.IsCellBlocked(MissionObjective))
+                {
+                    Console.WriteLine("The objective is blocked by an obstacle and cannot be reached.");
+                    break;
+                }
+                else
+                {
+                    String path = Grid.AddSafePath(AgentCurrentLocation, MissionObjective);
+                    if (path == null)
+                    {
+                        Console.WriteLine("There is no safe path to the objective.");
+                    }
+                    else {  
+                        Console.WriteLine("The following path will take you to the objective:");
+                        Console.WriteLine(path);
+                     }
+                    return;
+                }
 
+            }
 
-
+        }
 
 
         void ShowSafeDirections()
