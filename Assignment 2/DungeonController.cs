@@ -202,58 +202,74 @@ namespace Assignment_2
             foreach (var obstacle in Grid)
             {
                 var key = obstacle.Key;
-                pathGrid[key.X, key.Y] = 1;
+                if (key.X < 100 && key.X >= 0 && key.Y < 100 && key.Y >= 0) {
+                   pathGrid[key.X, key.Y] = 1;
+                }
 
             }
 
-            return FindSafePath(pathGrid, AgentCurrentLocation.X, AgentCurrentLocation.Y, AgentFinalDestination.X, AgentFinalDestination.Y);
+            return FindShortestPath(pathGrid, AgentCurrentLocation.X, AgentCurrentLocation.Y, AgentFinalDestination.X, AgentFinalDestination.Y);
 
          }
 
-        static string FindSafePath(int[,] grid, int x, int y, int endX, int endY)
+        static string? FindShortestPath(int[,] grid, int startX, int startY, int endX, int endY)
         {
-            if (x == endX && y == endY)
-                return "";
+            int[] dx = { 0, 0, -1, 1 };
+            int[] dy = { -1, 1, 0, 0 };
 
-            if (x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1) || grid[x, y] == 1)
-                return null; // Return null to indicate that this is not a valid path.
+            int width = grid.GetLength(0);
+            int height = grid.GetLength(1);
 
-            grid[x, y] = 1; // Mark the cell as visited
+            Queue<(int, int)> queue = new Queue<(int, int)>();
+            bool[,] visited = new bool[width, height];
+            Dictionary<(int, int), (int, int)> parent = new Dictionary<(int, int), (int, int)>();
 
-            List<Tuple<int, int, string>> possibleMoves = new List<Tuple<int, int, string>>();
+            queue.Enqueue((startX, startY));
+            visited[startX, startY] = true;
 
-            if (x < grid.GetLength(0) - 1 && grid[x + 1, y] != 1)
-                possibleMoves.Add(Tuple.Create(x + 1, y, "E"));
-            if (x > 0 && grid[x - 1, y] != 1) // Left
-                possibleMoves.Add(Tuple.Create(x - 1, y, "W"));
-            if (y < grid.GetLength(1) - 1 && grid[x, y + 1] != 1) 
-                possibleMoves.Add(Tuple.Create(x, y + 1, "S"));
-            if (y > 0 && grid[x, y - 1] != 1) // Up
-                possibleMoves.Add(Tuple.Create(x, y - 1, "N"));
-           
-
-            possibleMoves.Sort((a, b) => CalculateDistance(a.Item1, a.Item2, endX, endY) - CalculateDistance(b.Item1, b.Item2, endX, endY));
-
-            foreach (var move in possibleMoves)
+            while (queue.Count > 0)
             {
-                int nextX = move.Item1;
-                int nextY = move.Item2;
-                string direction = move.Item3;
+                var current = queue.Dequeue();
 
-                string path = FindSafePath(grid, nextX, nextY, endX, endY);
-                if (path != null)
-                    return direction + path;
+                if (current.Item1 == endX && current.Item2 == endY)
+                {
+                    return ReconstructPath(parent, (startX, startY), (endX, endY));
+                }
+
+                for (int i = 0; i < 4; i++)
+                {
+                    int nextX = current.Item1 + dx[i];
+                    int nextY = current.Item2 + dy[i];
+
+                    if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height && grid[nextX, nextY] != 1 && !visited[nextX, nextY])
+                    {
+                        queue.Enqueue((nextX, nextY));
+                        visited[nextX, nextY] = true;
+                        parent[(nextX, nextY)] = current;
+                    }
+                }
             }
 
-            grid[x, y] = 0; // Unmark the cell if the path is not successful
-
-            return null; // Return null to indicate that no valid path was found from this cell.
+            return null;
         }
 
-
-        static int CalculateDistance(int x1, int y1, int x2, int y2)
+        static string ReconstructPath(Dictionary<(int, int), (int, int)> parent, (int, int) start, (int, int) end)
         {
-            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
+            List<string> path = new List<string>();
+            var current = end;
+
+            while (current != start)
+            {
+                var previous = parent[current];
+                if (previous.Item1 < current.Item1) path.Add("E");
+                else if (previous.Item1 > current.Item1) path.Add("W");
+                else if (previous.Item2 < current.Item2) path.Add("S");
+                else if (previous.Item2 > current.Item2) path.Add("N");
+                current = previous;
+            }
+
+            path.Reverse();
+            return string.Join("", path);
         }
 
 
