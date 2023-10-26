@@ -139,7 +139,58 @@ namespace Assignment_2
         }
    
 
- 
+        public void AddShark(Coordinate NoseLocation, Direction SharkDirection)
+        {
+            Grid[NoseLocation] = new Shark(NoseLocation);
+            Coordinate body;
+            Coordinate bottom;
+            Coordinate leftFin;
+            Coordinate rightFin;
+            Coordinate leftTail;
+            Coordinate rightTail;
+            if (SharkDirection == Direction.North)
+            {
+                body = new Coordinate(NoseLocation.X, NoseLocation.Y + 1);
+                leftFin = new Coordinate(NoseLocation.X - 1, NoseLocation.Y + 1);
+                rightFin = new Coordinate(NoseLocation.X + 1, NoseLocation.Y + 1);
+                bottom = new Coordinate(NoseLocation.X, NoseLocation.Y + 2);
+                leftTail = new Coordinate(NoseLocation.X - 1, NoseLocation.Y + 3);
+                rightTail = new Coordinate(NoseLocation.X + 1, NoseLocation.Y + 3);
+            }
+            else if (SharkDirection == Direction.South) 
+            {
+                body = new Coordinate(NoseLocation.X, NoseLocation.Y - 1);
+                leftFin = new Coordinate(NoseLocation.X - 1, NoseLocation.Y - 1);
+                rightFin = new Coordinate(NoseLocation.X + 1, NoseLocation.Y - 1);
+                bottom = new Coordinate(NoseLocation.X, NoseLocation.Y - 2);
+                leftTail = new Coordinate(NoseLocation.X - 1, NoseLocation.Y - 3);
+                rightTail = new Coordinate(NoseLocation.X + 1, NoseLocation.Y - 3);
+            }
+            else if (SharkDirection == Direction.East)
+            {
+                body = new Coordinate(NoseLocation.X - 1, NoseLocation.Y);
+                leftFin = new Coordinate(NoseLocation.X - 1, NoseLocation.Y - 1);
+                rightFin = new Coordinate(NoseLocation.X - 1, NoseLocation.Y + 1);
+                bottom = new Coordinate(NoseLocation.X - 2, NoseLocation.Y);
+                leftTail = new Coordinate(NoseLocation.X - 3, NoseLocation.Y - 1);
+                rightTail = new Coordinate(NoseLocation.X - 3, NoseLocation.Y + 1);
+            }
+            else
+            {
+                body = new Coordinate(NoseLocation.X + 1, NoseLocation.Y);
+                leftFin = new Coordinate(NoseLocation.X + 1, NoseLocation.Y - 1);
+                rightFin = new Coordinate(NoseLocation.X + 1, NoseLocation.Y + 1);
+                bottom = new Coordinate(NoseLocation.X + 2, NoseLocation.Y);
+                leftTail = new Coordinate(NoseLocation.X + 3, NoseLocation.Y - 1);
+                rightTail = new Coordinate(NoseLocation.X + 3, NoseLocation.Y + 1);
+            }
+            Grid[body] = new Shark(body);
+            Grid[bottom] = new Shark(bottom);
+            Grid[rightFin] = new Shark(rightFin);
+            Grid[leftFin] = new Shark(leftFin);
+            Grid[rightTail] = new Shark(rightTail);
+            Grid[leftTail] = new Shark(leftTail);
+        }
 
         public string? AddSafePath (Coordinate AgentCurrentLocation, Coordinate AgentFinalDestination)
         {
@@ -248,7 +299,7 @@ namespace Assignment_2
                     Coordinate displayCoordinate = new Coordinate(j, i);
                     if (Grid.ContainsKey(displayCoordinate))
                     {
-                        Console.Write(Grid[displayCoordinate].printObstacle());
+                        Console.Write(Grid[displayCoordinate].printObstacle()) ;
                     }
                     else
                     {

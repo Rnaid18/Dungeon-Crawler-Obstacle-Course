@@ -30,6 +30,7 @@ namespace Assignment_2
                 Console.WriteLine("f) Add 'Fence' obstacle");
                 Console.WriteLine("s) Add 'Sensor' obstacle");
                 Console.WriteLine("c) Add 'Camera' obstacle");
+                Console.WriteLine("#) Add 'C-Shark/C#' obstacle");
                 Console.WriteLine("d) Show safe directions");
                 Console.WriteLine("m) Display obstacle map");
                 Console.WriteLine("p) Find safe path");
@@ -40,6 +41,9 @@ namespace Assignment_2
 
                 switch (selection)
                 {
+                    case "c":
+                        AddCamera();
+                        break;
                     case "g":
                         AddGuard();
                         break;
@@ -49,8 +53,8 @@ namespace Assignment_2
                     case "s":
                         AddSensor();
                         break;
-                    case "c":
-                        AddCamera();
+                    case "#":
+                        AddSeaShark();
                         break;
                     case "d":
                         ShowSafeDirections();
@@ -157,6 +161,7 @@ namespace Assignment_2
 
         }
 
+
         void AddCamera()
         {
             Coordinate CameraLocation = CoordinateView.PromptForCoordinate("Enter the camera's location (X,Y):");
@@ -180,6 +185,31 @@ namespace Assignment_2
 
             }
            
+        }
+
+        void AddSeaShark()
+        {
+            Coordinate NoseLocation = CoordinateView.PromptForCoordinate("Enter the shark's nose location (X,Y):");
+            while (true)
+            {
+                Console.WriteLine("Enter the direction the shark is facing (n, s, e or w):");
+
+                string? SharkDirection = Console.ReadLine();
+
+                if (SharkDirection != null && SharkDirection.Length == 1 && Enum.IsDefined(typeof(Direction), (int)SharkDirection[0]))
+                {
+
+                    Grid.AddShark(NoseLocation, (Direction) SharkDirection[0]);
+                    return;
+
+                }
+                else
+                {
+                    Console.WriteLine("Invalid direction.");
+                }
+
+            }
+
         }
 
 
