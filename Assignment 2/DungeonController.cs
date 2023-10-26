@@ -1,260 +1,267 @@
-﻿//using AStarNavigator;
-//using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
-using System;
+﻿//using MiNET.Blocks;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Assignment_2
 {
     internal class DungeonController
     {
+        private int RowNum;
+        private int ColumnNum;
+        private Dictionary<Coordinate, Obstacle> Grid;
 
-        private DungeonGrid Grid;
 
-
-        public DungeonController(DungeonGrid grid)
+        public DungeonController(int Columnnum, int Rownum)
         {
-            this.Grid = grid;
+            this.RowNum = Rownum;
+            this.ColumnNum = Columnnum;
+            this.Grid = new Dictionary<Coordinate, Obstacle>();
         }
 
-        public void display()
+
+        public void AddGuard(Coordinate guardCoord)
         {
-            bool ExitFlag = false;
+            Grid[(guardCoord)] = new Guard(guardCoord);
 
-            while (!ExitFlag)
+        }
+
+
+        public void AddFence(Coordinate FenceCoordStart, Coordinate FenceCoordEnd)
+        {
+
+            //determine fence orientation
+            bool HorizontalFence = FenceCoordStart.Y == FenceCoordEnd.Y; // Horizontal Fence
+            int Min = HorizontalFence ? Math.Min(FenceCoordStart.X, FenceCoordEnd.X) : Math.Min(FenceCoordStart.Y, FenceCoordEnd.Y); // returns smallest x & y value between two coordinates
+            int Max = HorizontalFence ? Math.Max(FenceCoordStart.X, FenceCoordEnd.X) : Math.Max(FenceCoordStart.Y, FenceCoordEnd.Y); // returns largest x & y value between two coordinates
+
+            //Add Fence along X or Y Axis
+            for (int i = Min; i <= Max; i++)
             {
-                Console.WriteLine("g) Add 'Guard' obstacle");
-                Console.WriteLine("f) Add 'Fence' obstacle");
-                Console.WriteLine("s) Add 'Sensor' obstacle");
-                Console.WriteLine("c) Add 'Camera' obstacle");
-                Console.WriteLine("d) Show safe directions");
-                Console.WriteLine("m) Display obstacle map");
-                Console.WriteLine("p) Find safe path");
-                Console.WriteLine("x) Exit");
-                Console.WriteLine("Enter code:");
 
-                string? selection = Console.ReadLine();
-
-                switch (selection)
+                if (HorizontalFence)
                 {
-                    case "g":
-                        AddGuard();
-                        break;
-                    case "f":
-                        AddFence();
-                        break;
-                    case "s":
-                        AddSensor();
-                        break;
-                    case "c":
-                        AddCamera();
-                        break;
-                    case "d":
-                        ShowSafeDirections();
-                        break;
-                    case "m":
-                        //execute option mmethod()
-                        DisplayObstacleMap();
-                        break;
-                    case "p":
-                        FindSafePath();
-                        break;
-                    case "x":
-                        ExitFlag = true;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid option.");
-                        Console.WriteLine("Enter code:");
-                        break;
+                    Grid[new Coordinate(i, FenceCoordStart.Y)] = new Fence(i, FenceCoordStart.Y);                    
+                }
+                else // Vertical Fence 
+                {
+                    Grid[new Coordinate(FenceCoordStart.X, i)] = new Fence(FenceCoordStart.X, i);
                 }
             }
-
-
         }
 
-
-
-        private void Fence(int x, int y)
+        public void AddSensor(Coordinate SensorLocation, double Range)
         {
 
-        }
-        private void sensor(int x, int y)
-        {
+            Grid[SensorLocation] = new Sensor(SensorLocation);    //create sensor at coordinate (x,y)
 
-        }
+            double SensorRangeIndicator = 0;
 
+            Coordinate TopLeftScan = new Coordinate(SensorLocation.X - (int)Math.Ceiling(Range), SensorLocation.Y - (int)Math.Ceiling(Range));
+            Coordinate BottomRightScan = new Coordinate(SensorLocation.X + (int)Math.Ceiling(Range), SensorLocation.Y + (int)Math.Ceiling(Range));
 
-
-
-        void DisplayObstacleMap()
-        {
-
-            while (true)
+            for (int i = TopLeftScan.Y; i <= BottomRightScan.Y; i++)
             {
-                Cell coord1 = Cell.PromptForCoordinate("Enter the location of the top-left cell of the map (X,Y):");
-                Cell coord2 = Cell.PromptForCoordinate("Enter the location of the bottom-right cell of the map (X,Y):");
-                if (coord2.X > coord1.X && coord2.Y > coord1.Y)
+                for (int j = TopLeftScan.X; j <= BottomRightScan.X; j++)
                 {
-                
-                    this.Grid.DisplayGrid(coord1, coord2); //Display the grid
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid map specification.");
-                }
-            }
+                    SensorRangeIndicator = Math.Sqrt(((i - SensorLocation.Y) * (i - SensorLocation.Y)) + ((j - SensorLocation.X) * (j - SensorLocation.X)));
 
-        }
-
-        void AddGuard()
-        {
-            Cell guardCoord = Cell.PromptForCoordinate("Enter the guard's location (X,Y):");
-            Grid.AddGuard(guardCoord);
-        }
-
-        void AddFence()
-        {
-            Cell FenceCoordStart;
-            Cell FenceCoordEnd;
-            bool ValidFence = false;
-
-            do
-            {
-                FenceCoordStart = Cell.PromptForCoordinate("Enter the location where the fence starts (X,Y):");
-                FenceCoordEnd = Cell.PromptForCoordinate("Enter the location where the fence ends (X,Y):");
-
-                ValidFence = (FenceCoordStart.X == FenceCoordEnd.X && FenceCoordStart.Y != FenceCoordEnd.Y) ||
-                             (FenceCoordStart.Y == FenceCoordEnd.Y && FenceCoordStart.X != FenceCoordEnd.X);
-
-                if (!ValidFence)
-                {
-                    Console.WriteLine("Fences must be horizontal or vertical.");
-                }
-            } while (!ValidFence);
-    
-            Grid.AddFence(FenceCoordStart, FenceCoordEnd);
-        }
-
-
-
-        void AddSensor()
-        {
-            Cell SensorLocation = Cell.PromptForCoordinate("Enter the sensor's location (X,Y):");
-
-            while (true)
-            {
-                Console.WriteLine("Enter the sensor's range (in klicks):");
-
-                string? SensorRange = Console.ReadLine();
-
-
-                if (SensorRange != null && float.TryParse(SensorRange, out float value) && value > 0)
-                {
-
-                    Grid.AddSensor(SensorLocation, value);
-                    return;
-
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input.");
-                }
-
-            }
-
-
-        }
-
-        void AddCamera()
-        {
-            Cell CameraLocation = Cell.PromptForCoordinate("Enter the camera's location (X,Y):");
-            while (true)
-            {
-                Console.WriteLine("Enter the direction the camera is facing (n, s, e or w):");
-
-                string? CameraDirection = Console.ReadLine();
-
-
-                if (CameraDirection != null && (CameraDirection == "n" || CameraDirection == "e" || CameraDirection == "s" || CameraDirection == "w"))
-                {
-
-                    Grid.AddCamera(new Cell(CameraLocation.X,CameraLocation.Y), CameraDirection);
-                    return;
-
-                }
-                else
-                {
-                    Console.WriteLine("Invalid direction.");
-                }
-
-            }
-           
-        }
-
-
-        void FindSafePath () 
-        {
-            Cell AgentCurrentLocation = Cell.PromptForCoordinate("Enter your current location (X,Y):");
-            Cell MissionObjective = Cell.PromptForCoordinate("Enter the location of the mission objective (X,Y):");
-            while (true)
-            {
-
-                if (MissionObjective == AgentCurrentLocation)
-                {
-                    Console.WriteLine("Agent, you are already at the objective.");
-                    break;
-                }
-                else if (Grid.IsCellBlocked(MissionObjective))
-                {
-                    Console.WriteLine("The objective is blocked by an obstacle and cannot be reached.");
-                    break;
-                }
-                else
-                {
-                    String path = Grid.AddSafePath(AgentCurrentLocation, MissionObjective);
-                    if (path == null)
+                    if (SensorRangeIndicator <= Range)
                     {
-                        Console.WriteLine("There is no safe path to the objective.");
+                        Grid[new Coordinate(j, i)] = new Sensor(j, i);
                     }
-                    else {  
-                        Console.WriteLine("The following path will take you to the objective:");
-                        Console.WriteLine(path);
-                     }
-                    return;
                 }
-
             }
-
         }
 
 
-        void ShowSafeDirections()
+        public void AddCamera(Coordinate CameraLocation, String Direction)
         {
+            Grid[CameraLocation] = new Camera(CameraLocation);   
 
-            Cell currentLocation = Cell.PromptForCoordinate("Enter your current location (X,Y):");
+            double Range = 1000;
+            int Compass = GetCompass(Direction);
 
-            if (Grid.IsCellBlocked(currentLocation))
+            Coordinate TopLeftScan = new Coordinate(CameraLocation.X - (int)Math.Ceiling(Range), CameraLocation.Y - (int)Math.Ceiling(Range));
+            Coordinate BottomRightScan = new Coordinate(CameraLocation.X + (int)Math.Ceiling(Range), CameraLocation.Y + (int)Math.Ceiling(Range));
+
+            for (int i = TopLeftScan.Y; i <= BottomRightScan.Y; i++)
             {
-                Console.WriteLine("Agent, your location is compromised. Abort mission.");
+                for (int j = TopLeftScan.X; j <= BottomRightScan.X; j++)
+                {
+                    if (IsInSector(CameraLocation, Range / 2, Compass, j, i))
+                    {
+                        Grid[new Coordinate(j, i)] = new Camera(j, i);
+                    }
+                }
+
             }
-            else
+        }
+
+
+        private int GetCompass(String Direction)
+        {
+            switch (Direction)
             {
-                String safeDirections = Grid.GetSafeDirections(currentLocation);
-                if (safeDirections == "")
-                {
-                    Console.WriteLine("You cannot safely move in any direction. Abort mission.");
-                }
-                else
-                {
-                    Console.WriteLine($"You can safely take any of the following directions: {safeDirections}");
-                }
+                case "n":
+                    return 270;
+                case "s":
+                    return 90;
+                case "w":
+                    return 180;
+                default: return 0;
             }
+        }
+
+        private bool IsInSector(Coordinate CameraLocation, double radius, int sector, int x, int y) {
+            double Let = 180 / Math.PI * Math.Atan2(y - CameraLocation.Y, x - CameraLocation.X);
+            return degreesApart(sector, Let) <= 90 / 2;
 
         }
-    }
+
+        private double degreesApart(double startDegree, double endDegree)
+        {
+            return Math.Min(degreesLeft(startDegree, endDegree), degreesRight(startDegree, endDegree));
+        }
+
+        private double degreesLeft(double startDegree, double endDegree)
+        {
+            return wrap(endDegree - startDegree, 360);
+        }
+
+        private double degreesRight(double startDegree, double endDegree)
+        {
+            return wrap(startDegree - endDegree, 360);
+        }
+
+        private double wrap(double value, double modulo)
+        {
+            return ((value % modulo) + modulo) % modulo;
+        }
+   
+
+ 
+
+        public string? AddSafePath (Coordinate AgentCurrentLocation, Coordinate AgentFinalDestination)
+        {
+            int maxX = Math.Max(AgentCurrentLocation.X, AgentFinalDestination.X);
+            int maxY = Math.Max(AgentCurrentLocation.Y, AgentFinalDestination.Y);
+            int gridSize = Math.Max(maxY, maxX);
+            int[,] pathGrid = new int[100, 100]; // Replace with your grid and obstacle information
+
+            foreach (var obstacle in Grid)
+            {
+                var key = obstacle.Key;
+                pathGrid[key.X, key.Y] = 1;
+
+            }
+
+            return FindSafePath(pathGrid, AgentCurrentLocation.X, AgentCurrentLocation.Y, AgentFinalDestination.X, AgentFinalDestination.Y);
+
+         }
+
+        static string FindSafePath(int[,] grid, int x, int y, int endX, int endY)
+        {
+            if (x == endX && y == endY)
+                return "";
+
+            if (x < 0 || x >= grid.GetLength(0) || y < 0 || y >= grid.GetLength(1) || grid[x, y] == 1)
+                return null; // Return null to indicate that this is not a valid path.
+
+            grid[x, y] = 1; // Mark the cell as visited
+
+            List<Tuple<int, int, string>> possibleMoves = new List<Tuple<int, int, string>>();
+
+            if (x < grid.GetLength(0) - 1 && grid[x + 1, y] != 1)
+                possibleMoves.Add(Tuple.Create(x + 1, y, "E"));
+            if (x > 0 && grid[x - 1, y] != 1) // Left
+                possibleMoves.Add(Tuple.Create(x - 1, y, "W"));
+            if (y < grid.GetLength(1) - 1 && grid[x, y + 1] != 1) 
+                possibleMoves.Add(Tuple.Create(x, y + 1, "S"));
+            if (y > 0 && grid[x, y - 1] != 1) // Up
+                possibleMoves.Add(Tuple.Create(x, y - 1, "N"));
+           
+
+            possibleMoves.Sort((a, b) => CalculateDistance(a.Item1, a.Item2, endX, endY) - CalculateDistance(b.Item1, b.Item2, endX, endY));
+
+            foreach (var move in possibleMoves)
+            {
+                int nextX = move.Item1;
+                int nextY = move.Item2;
+                string direction = move.Item3;
+
+                string path = FindSafePath(grid, nextX, nextY, endX, endY);
+                if (path != null)
+                    return direction + path;
+            }
+
+            grid[x, y] = 0; // Unmark the cell if the path is not successful
+
+            return null; // Return null to indicate that no valid path was found from this cell.
+        }
+
+
+        static int CalculateDistance(int x1, int y1, int x2, int y2)
+        {
+            return Math.Abs(x1 - x2) + Math.Abs(y1 - y2);
+        }
+
+
+
+
+
+        public bool IsCellBlocked(Coordinate currentLocation)
+        {
+           return Grid.ContainsKey(currentLocation);
+
+        }
+
+        public String GetSafeDirections(Coordinate currentLocation)
+        {
+            String safeDirections = "";
+            if (!IsCellBlocked(new Coordinate(currentLocation.X, currentLocation.Y - 1)))
+            {
+                safeDirections += "N";
+            }
+            if (!IsCellBlocked(new Coordinate(currentLocation.X, currentLocation.Y + 1)))
+            {
+                safeDirections += "S";
+            }
+            if (!IsCellBlocked(new Coordinate(currentLocation.X + 1 , currentLocation.Y)))
+            {
+                safeDirections += "E";
+            }
+            if (!IsCellBlocked(new Coordinate(currentLocation.X - 1, currentLocation.Y)))
+            {
+                safeDirections += "W";
+            }
+            return safeDirections;
+        }
+
+        public void DisplayGrid(Coordinate TopLeftCell, Coordinate BottomRightCell) 
+        { 
+
+            for (int i = TopLeftCell.Y; i <= BottomRightCell.Y; i++)
+            {
+             
+                for (int j = TopLeftCell.X; j <= BottomRightCell.X; j++)
+                {
+                    Coordinate displayCoordinate = new Coordinate(j, i);
+                    if (Grid.ContainsKey(displayCoordinate))
+                    {
+                        Console.Write(Grid[displayCoordinate].printObstacle());
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }       
+                }
+
+                Console.WriteLine();
+            }
+        }
+
+
+
+
+}
 }

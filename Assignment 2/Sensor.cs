@@ -6,14 +6,18 @@ using System.Threading.Tasks;
 
 namespace Assignment_2
 {
-    internal class Sensor : Cell
+    internal class Sensor : Obstacle
     {
-        public Sensor(int x, int y) : base(x, y)
+        public Sensor(Coordinate coordinate) : base(coordinate)
+        {
+
+        }
+       public Sensor(int x, int y) : base(x, y)
         {
 
         }
 
-        public override string ToString()
+        public override string printObstacle()
         {
             return "s";
         }

@@ -5,8 +5,8 @@
 
         static void Main(string[] args)
         {
-            DungeonGrid grid = new DungeonGrid(-1000, 1000); 
-            DungeonController dungeon = new DungeonController(grid);
+            DungeonController grid = new DungeonController(-1000, 1000); 
+            DungeonView dungeon = new DungeonView(grid);
             dungeon.display(); 
            
         }
