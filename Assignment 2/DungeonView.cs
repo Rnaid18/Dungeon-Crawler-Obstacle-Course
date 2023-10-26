@@ -166,11 +166,10 @@ namespace Assignment_2
 
                 string? CameraDirection = Console.ReadLine();
 
-
-                if (CameraDirection != null && (CameraDirection == "n" || CameraDirection == "e" || CameraDirection == "s" || CameraDirection == "w"))
+                if (CameraDirection != null && CameraDirection.Length == 1 && Enum.IsDefined(typeof(Direction), (int) CameraDirection[0]))
                 {
 
-                    Grid.AddCamera(new Coordinate(CameraLocation.X,CameraLocation.Y), CameraDirection);
+                    Grid.AddCamera(new Coordinate(CameraLocation.X,CameraLocation.Y), (Direction) CameraDirection[0]);
                     return;
 
                 }

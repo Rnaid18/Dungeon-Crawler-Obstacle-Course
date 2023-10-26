@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assignment_2
 {
-    public class Coordinate
+    public class Coordinate : IEquatable<Coordinate>
     {
         public int X { get; }
         public int Y { get; }

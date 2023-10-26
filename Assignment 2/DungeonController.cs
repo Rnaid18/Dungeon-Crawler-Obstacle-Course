@@ -74,12 +74,12 @@ namespace Assignment_2
         }
 
 
-        public void AddCamera(Coordinate CameraLocation, String Direction)
+        public void AddCamera(Coordinate CameraLocation, Direction CameraDirection)
         {
             Grid[CameraLocation] = new Camera(CameraLocation);   
 
             double Range = 1000;
-            int Compass = GetCompass(Direction);
+            int Compass = GetCompass(CameraDirection);
 
             Coordinate TopLeftScan = new Coordinate(CameraLocation.X - (int)Math.Ceiling(Range), CameraLocation.Y - (int)Math.Ceiling(Range));
             Coordinate BottomRightScan = new Coordinate(CameraLocation.X + (int)Math.Ceiling(Range), CameraLocation.Y + (int)Math.Ceiling(Range));
@@ -98,15 +98,15 @@ namespace Assignment_2
         }
 
 
-        private int GetCompass(String Direction)
+        private int GetCompass(Direction CameraDirection)
         {
-            switch (Direction)
+            switch (CameraDirection)
             {
-                case "n":
+                case Direction.North:
                     return 270;
-                case "s":
+                case Direction.South:
                     return 90;
-                case "w":
+                case Direction.West:
                     return 180;
                 default: return 0;
             }
