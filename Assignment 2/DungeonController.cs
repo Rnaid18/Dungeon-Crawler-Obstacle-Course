@@ -1,20 +1,12 @@
-﻿//using MiNET.Blocks;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-
-namespace Assignment_2
+﻿namespace Assignment_2
 {
     internal class DungeonController
     {
-        private int RowNum;
-        private int ColumnNum;
-        private Dictionary<Coordinate, Obstacle> Grid;
+        private readonly Dictionary<Coordinate, Obstacle> Grid;
 
 
-        public DungeonController(int Columnnum, int Rownum)
+        public DungeonController()
         {
-            this.RowNum = Rownum;
-            this.ColumnNum = Columnnum;
             this.Grid = new Dictionary<Coordinate, Obstacle>();
         }
 
@@ -40,7 +32,7 @@ namespace Assignment_2
 
                 if (HorizontalFence)
                 {
-                    Grid[new Coordinate(i, FenceCoordStart.Y)] = new Fence(i, FenceCoordStart.Y);                    
+                    Grid[new Coordinate(i, FenceCoordStart.Y)] = new Fence(i, FenceCoordStart.Y);
                 }
                 else // Vertical Fence 
                 {
@@ -76,7 +68,7 @@ namespace Assignment_2
 
         public void AddCamera(Coordinate CameraLocation, Direction CameraDirection)
         {
-            Grid[CameraLocation] = new Camera(CameraLocation);   
+            Grid[CameraLocation] = new Camera(CameraLocation);
 
             double Range = 1000;
             int Compass = GetCompass(CameraDirection);
@@ -88,7 +80,7 @@ namespace Assignment_2
             {
                 for (int j = TopLeftScan.X; j <= BottomRightScan.X; j++)
                 {
-                    if (IsInSector(CameraLocation, Range / 2, Compass, j, i))
+                    if (IsInSector(CameraLocation, Compass, j, i))
                     {
                         Grid[new Coordinate(j, i)] = new Camera(j, i);
                     }
@@ -98,7 +90,7 @@ namespace Assignment_2
         }
 
 
-        private int GetCompass(Direction CameraDirection)
+        private static int GetCompass(Direction CameraDirection)
         {
             switch (CameraDirection)
             {
@@ -112,32 +104,33 @@ namespace Assignment_2
             }
         }
 
-        private bool IsInSector(Coordinate CameraLocation, double radius, int sector, int x, int y) {
+        private static bool IsInSector(Coordinate CameraLocation, int sector, int x, int y)
+        {
             double Let = 180 / Math.PI * Math.Atan2(y - CameraLocation.Y, x - CameraLocation.X);
-            return degreesApart(sector, Let) <= 90 / 2;
+            return DegreesApart(sector, Let) <= 45;
 
         }
 
-        private double degreesApart(double startDegree, double endDegree)
+        private static double DegreesApart(double startDegree, double endDegree)
         {
-            return Math.Min(degreesLeft(startDegree, endDegree), degreesRight(startDegree, endDegree));
+            return Math.Min(DegreesLeft(startDegree, endDegree), DegreesRight(startDegree, endDegree));
         }
 
-        private double degreesLeft(double startDegree, double endDegree)
+        private static double DegreesLeft(double startDegree, double endDegree)
         {
-            return wrap(endDegree - startDegree, 360);
+            return Wrap(endDegree - startDegree, 360);
         }
 
-        private double degreesRight(double startDegree, double endDegree)
+        private static double DegreesRight(double startDegree, double endDegree)
         {
-            return wrap(startDegree - endDegree, 360);
+            return Wrap(startDegree - endDegree, 360);
         }
 
-        private double wrap(double value, double modulo)
+        private static double Wrap(double value, double modulo)
         {
             return ((value % modulo) + modulo) % modulo;
         }
-   
+
 
         public void AddShark(Coordinate NoseLocation, Direction SharkDirection)
         {
@@ -157,7 +150,7 @@ namespace Assignment_2
                 leftTail = new Coordinate(NoseLocation.X - 1, NoseLocation.Y + 3);
                 rightTail = new Coordinate(NoseLocation.X + 1, NoseLocation.Y + 3);
             }
-            else if (SharkDirection == Direction.South) 
+            else if (SharkDirection == Direction.South)
             {
                 body = new Coordinate(NoseLocation.X, NoseLocation.Y - 1);
                 leftFin = new Coordinate(NoseLocation.X - 1, NoseLocation.Y - 1);
@@ -192,25 +185,20 @@ namespace Assignment_2
             Grid[leftTail] = new Shark(leftTail);
         }
 
-        public string? AddSafePath (Coordinate AgentCurrentLocation, Coordinate AgentFinalDestination)
+        public string? AddSafePath(Coordinate AgentCurrentLocation, Coordinate AgentFinalDestination)
         {
-            int maxX = Math.Max(AgentCurrentLocation.X, AgentFinalDestination.X);
-            int maxY = Math.Max(AgentCurrentLocation.Y, AgentFinalDestination.Y);
-            int gridSize = Math.Max(maxY, maxX);
-            int[,] pathGrid = new int[100, 100]; // Replace with your grid and obstacle information
-
-            foreach (var obstacle in Grid)
+            int[,] pathGrid = new int[1000, 1000];
+            foreach (var key in from obstacle in Grid
+                                let key = obstacle.Key
+                                where key.X < 100 && key.X >= 0 && key.Y < 100 && key.Y >= 0
+                                select key)
             {
-                var key = obstacle.Key;
-                if (key.X < 100 && key.X >= 0 && key.Y < 100 && key.Y >= 0) {
-                   pathGrid[key.X, key.Y] = 1;
-                }
-
+                pathGrid[key.X, key.Y] = 1;
             }
 
             return FindShortestPath(pathGrid, AgentCurrentLocation.X, AgentCurrentLocation.Y, AgentFinalDestination.X, AgentFinalDestination.Y);
 
-         }
+        }
 
         static string? FindShortestPath(int[,] grid, int startX, int startY, int endX, int endY)
         {
@@ -220,8 +208,12 @@ namespace Assignment_2
             int width = grid.GetLength(0);
             int height = grid.GetLength(1);
 
+            // The queue is used to explore cells in breadth - first order
             Queue<(int, int)> queue = new Queue<(int, int)>();
+
             bool[,] visited = new bool[width, height];
+
+            // the parent dictionary keeps track of the previous cell to reconstruct the path once the destination is reached
             Dictionary<(int, int), (int, int)> parent = new Dictionary<(int, int), (int, int)>();
 
             queue.Enqueue((startX, startY));
@@ -253,6 +245,7 @@ namespace Assignment_2
             return null;
         }
 
+        // The ReconstructPath function is used to convert the parent information into the path string.
         static string ReconstructPath(Dictionary<(int, int), (int, int)> parent, (int, int) start, (int, int) end)
         {
             List<string> path = new List<string>();
@@ -278,7 +271,7 @@ namespace Assignment_2
 
         public bool IsCellBlocked(Coordinate currentLocation)
         {
-           return Grid.ContainsKey(currentLocation);
+            return Grid.ContainsKey(currentLocation);
 
         }
 
@@ -293,7 +286,7 @@ namespace Assignment_2
             {
                 safeDirections += "S";
             }
-            if (!IsCellBlocked(new Coordinate(currentLocation.X + 1 , currentLocation.Y)))
+            if (!IsCellBlocked(new Coordinate(currentLocation.X + 1, currentLocation.Y)))
             {
                 safeDirections += "E";
             }
@@ -304,23 +297,23 @@ namespace Assignment_2
             return safeDirections;
         }
 
-        public void DisplayGrid(Coordinate TopLeftCell, Coordinate BottomRightCell) 
-        { 
+        public void DisplayGrid(Coordinate TopLeftCell, Coordinate BottomRightCell)
+        {
 
             for (int i = TopLeftCell.Y; i <= BottomRightCell.Y; i++)
             {
-             
+
                 for (int j = TopLeftCell.X; j <= BottomRightCell.X; j++)
                 {
                     Coordinate displayCoordinate = new Coordinate(j, i);
                     if (Grid.ContainsKey(displayCoordinate))
                     {
-                        Console.Write(Grid[displayCoordinate].printObstacle()) ;
+                        Console.Write(Grid[displayCoordinate].printObstacle());
                     }
                     else
                     {
                         Console.Write(".");
-                    }       
+                    }
                 }
 
                 Console.WriteLine();
@@ -330,5 +323,5 @@ namespace Assignment_2
 
 
 
-}
+    }
 }

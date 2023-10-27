@@ -5,9 +5,9 @@
 
         static void Main(string[] args)
         {
-            DungeonController grid = new DungeonController(-1000, 1000); 
+            DungeonController grid = new DungeonController(); 
             DungeonView dungeon = new DungeonView(grid);
-            dungeon.display(); 
+            dungeon.Display(); 
            
         }
     }

@@ -1,6 +1,4 @@
-﻿//using AStarNavigator;
-//using Microsoft.Practices.EnterpriseLibrary.Common.Utility;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
@@ -13,14 +11,14 @@ namespace Assignment_2
     internal class DungeonView
     {
 
-        private DungeonController Grid;
+        private readonly DungeonController Grid;
 
 
         public DungeonView(DungeonController grid)
         {
             this.Grid = grid;
         }
-        public void display()
+        public void Display()
         {
             bool ExitFlag = false;
 
@@ -165,51 +163,15 @@ namespace Assignment_2
         void AddCamera()
         {
             Coordinate CameraLocation = CoordinateView.PromptForCoordinate("Enter the camera's location (X,Y):");
-            while (true)
-            {
-                Console.WriteLine("Enter the direction the camera is facing (n, s, e or w):");
-
-                string? CameraDirection = Console.ReadLine();
-
-                if (CameraDirection != null && CameraDirection.Length == 1 && Enum.IsDefined(typeof(Direction), (int) CameraDirection[0]))
-                {
-
-                    Grid.AddCamera(new Coordinate(CameraLocation.X,CameraLocation.Y), (Direction) CameraDirection[0]);
-                    return;
-
-                }
-                else
-                {
-                    Console.WriteLine("Invalid direction.");
-                }
-
-            }
-           
+            Direction CameraDirection = CoordinateView.PromptForDirection("Enter the direction the camera is facing (n, s, e or w):");
+            Grid.AddCamera(CameraLocation, CameraDirection);
         }
 
         void AddSeaShark()
         {
             Coordinate NoseLocation = CoordinateView.PromptForCoordinate("Enter the shark's nose location (X,Y):");
-            while (true)
-            {
-                Console.WriteLine("Enter the direction the shark is facing (n, s, e or w):");
-
-                string? SharkDirection = Console.ReadLine();
-
-                if (SharkDirection != null && SharkDirection.Length == 1 && Enum.IsDefined(typeof(Direction), (int)SharkDirection[0]))
-                {
-
-                    Grid.AddShark(NoseLocation, (Direction) SharkDirection[0]);
-                    return;
-
-                }
-                else
-                {
-                    Console.WriteLine("Invalid direction.");
-                }
-
-            }
-
+            Direction SharkDirection = CoordinateView.PromptForDirection("Enter the direction the shark is facing (n, s, e or w):");
+            Grid.AddShark(NoseLocation, SharkDirection);
         }
 
 

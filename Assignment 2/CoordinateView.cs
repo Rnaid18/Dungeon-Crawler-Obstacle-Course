@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Assignment_2
 {
-    internal class CoordinateView
+    internal static class CoordinateView
     {
         public static Coordinate PromptForCoordinate(String userPrompt)
         {
@@ -28,6 +28,26 @@ namespace Assignment_2
                         Console.WriteLine("Invalid input.");
                     }
                 }
+            }
+        }
+
+        public static Direction PromptForDirection(String userPrompt)
+        {
+            while (true)
+            {
+                Console.WriteLine(userPrompt);
+
+                string? DirectionString = Console.ReadLine();
+
+                if (DirectionString != null && DirectionString.Length == 1 && Enum.IsDefined(typeof(Direction), (int)DirectionString[0]))
+                {
+                    return (Direction)DirectionString[0];
+                }
+                else
+                {
+                    Console.WriteLine("Invalid direction.");
+                }
+
             }
         }
     }
